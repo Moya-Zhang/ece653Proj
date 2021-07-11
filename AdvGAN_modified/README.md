@@ -64,8 +64,7 @@ this is the only file you'll need to modify 🙂.
 *	`c` : The constant used in the hinge loss. 
 *	`D_number_of_steps_per_batch` : The number of updates for the Discriminator before the Generator gets updated. 
 *	`G_number_of_steps_per_batch` : The number of updates for the Generator before the Discriminator gets updated. 
-*	`is_relativistic` : If set to `True`, the cost function for the AdvGAN will be the Relativistic Average Least Squares 
-loss. Otherwise, the training will be on the Least Squares objective as in the original paper. 
+*	'loss_fun' : can be chosen from one of the options: 'mse' 'cross-entropy' 'rela' 'wgan' (note that if you choose wgan, please modify the Discriminator iteration to 5)
 
 
 ## Instructions
