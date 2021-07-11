@@ -188,7 +188,7 @@ class AdvGAN_Attack:
                 cr = nn.BCELoss()
                 loss_G_gan = cr(pred_fake, torch.ones_like(pred_fake))
             else:
-                loss_G_gan = -torch.mean(pred_fake)
+                loss_G_gan = torch.mean(pred_fake)
 
             loss_G = self.gamma * loss_adv + self.alpha * loss_G_gan + self.beta * loss_hinge
             loss_G.backward()
