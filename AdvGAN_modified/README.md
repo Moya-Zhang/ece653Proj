@@ -64,7 +64,7 @@ this is the only file you'll need to modify 🙂.
 *	`c` : The constant used in the hinge loss. 
 *	`D_number_of_steps_per_batch` : The number of updates for the Discriminator before the Generator gets updated. 
 *	`G_number_of_steps_per_batch` : The number of updates for the Generator before the Discriminator gets updated. 
-*	'loss_fun' : can be chosen from one of the options: 'mse' 'cross-entropy' 'rela' 'wgan' (note that if you choose wgan, please modify D_number_of_steps_per_batch to 5)
+*	'loss_fun' : can be chosen from one of the options: 'mse' 'cross-entropy' 'rela' 'wgan' 'wgan-GP'
 
 
 ## Instructions
