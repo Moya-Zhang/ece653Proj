@@ -30,6 +30,7 @@ import torch.nn.functional as F
 
 import models
 
+from wgangp_utils import gradient_penalty
 
 
 models_path = './checkpoints/AdvGAN/'
@@ -66,7 +67,8 @@ class AdvGAN_Attack:
                 c, 
                 n_steps_D, 
                 n_steps_G, 
-                loss_fun
+                loss_fun,
+                lambda_gp
             ):
         self.device = device
         self.n_labels = n_labels
@@ -88,9 +90,14 @@ class AdvGAN_Attack:
         self.n_steps_G = n_steps_G
 
         self.loss_fun = loss_fun
+        
+        self.lambda_gp = lambda_gp
 
         self.G = models.Generator(n_channels, n_channels, target).to(device)
-        self.D = models.Discriminator(n_channels).to(device)
+        if self.loss_fun == "wgan-GP":
+            self.D = models.Discriminator_WGANGP(n_channels).to(device)
+        else:
+            self.D = models.Discriminator(n_channels).to(device)
 
         # initialize all weights
         self.G.apply(init_weights)
@@ -100,6 +107,10 @@ class AdvGAN_Attack:
         if self.loss_fun == 'wgan':
             self.optimizer_G = torch.optim.RMSprop(self.G.parameters(), lr=self.lr)
             self.optimizer_D = torch.optim.RMSprop(self.D.parameters(), lr=self.lr)
+        elif self.loss_fun == 'wgan-GP':
+            self.optimizer_G = torch.optim.Adam(self.G.parameters(), lr=self.lr, betas=(0.0, 0.9))
+            self.optimizer_D = torch.optim.Adam(self.D.parameters(), lr=self.lr, betas=(0.0,0.9))
+
         else:
             self.optimizer_G = torch.optim.Adam(self.G.parameters(), lr=self.lr)
             self.optimizer_D = torch.optim.Adam(self.D.parameters(), lr=self.lr)
@@ -143,6 +154,9 @@ class AdvGAN_Attack:
                 loss_D_fake = cr(pred_fake, torch.zeros_like(pred_fake))
 
                 loss_D = (loss_D_fake + loss_D_real)/2
+            elif self.loss_fun == "wgan-GP":
+                gp = gradient_penalty(self.D, x, adv_images, device = self.device)
+                loss_D = - (torch.mean(pred_real)-torch.mean(pred_fake)) + self.lambda_gp*gp
             else:
                 loss_D = -(torch.mean(pred_real)-torch.mean(pred_fake))
 
@@ -150,7 +164,7 @@ class AdvGAN_Attack:
                     p.data.clamp_(-0.1, 0.1)
 
 
-            loss_D.backward()
+            loss_D.backward(retain_graph=True)
             self.optimizer_D.step()
 
         # optimize G
@@ -188,7 +202,7 @@ class AdvGAN_Attack:
                 cr = nn.BCELoss()
                 loss_G_gan = cr(pred_fake, torch.ones_like(pred_fake))
             else:
-                loss_G_gan = torch.mean(pred_fake)
+                loss_G_gan = - torch.mean(pred_fake)
 
             loss_G = self.gamma * loss_adv + self.alpha * loss_G_gan + self.beta * loss_hinge
             loss_G.backward()

@@ -79,6 +79,33 @@ class Discriminator(nn.Module):
         output = self.sigmoid(logits).squeeze()
         return logits, output
 
+class Discriminator_WGANGP(nn.Module):
+    def __init__(self, image_nc):
+        super(Discriminator_WGANGP, self).__init__()
+        # MNIST: 1*28*28
+        model = [
+            nn.Conv2d(image_nc, 8, kernel_size=4, stride=2, padding=0, bias=True),
+            nn.LeakyReLU(0.2),
+            # 8*13*13
+            nn.Conv2d(8, 16, kernel_size=4, stride=2, padding=0, bias=True),
+            nn.InstanceNorm2d(16),
+            nn.LeakyReLU(0.2),
+            # 16*5*5
+            nn.Conv2d(16, 32, kernel_size=4, stride=2, padding=0, bias=True),
+            nn.InstanceNorm2d(32),
+            nn.LeakyReLU(0.2),
+            nn.Conv2d(32, 1, 1),
+            # 32*1*1
+        ]
+
+        self.model = nn.Sequential(*model)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        logits = self.model(x)
+        output = self.sigmoid(logits).squeeze()
+        return logits, output
+
 
 class Generator(nn.Module):
     def __init__(self, gen_input_nc, image_nc, target='Auto'):

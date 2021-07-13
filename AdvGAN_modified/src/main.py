@@ -53,8 +53,9 @@ def load_hyperparameters(config_file):
     n_steps_D=hyperparams['D_number_of_steps_per_batch']
     n_steps_G = hyperparams['G_number_of_steps_per_batch']
     loss_fun = hyperparams['loss_fun']
+    lambda_gp = hyperparams['lambda_gp']
 
-    return target, lr_target, epochs_target, l_inf_bound, epochs, lr, alpha, beta, gamma, kappa, c, n_steps_D, n_steps_G, loss_fun
+    return target, lr_target, epochs_target, l_inf_bound, epochs, lr, alpha, beta, gamma, kappa, c, n_steps_D, n_steps_G, loss_fun, lambda_gp
 
 
 def create_dirs():
@@ -242,7 +243,7 @@ def test_attack_performance(target, dataloader, mode, adv_GAN, target_model, bat
 
 
 print('\nLOADING CONFIGURATIONS...')
-TARGET, LR_TARGET_MODEL, EPOCHS_TARGET_MODEL, L_INF_BOUND, EPOCHS, LR, ALPHA, BETA, GAMMA, KAPPA, C, N_STEPS_D, N_STEPS_G, LOSS_FUN = load_hyperparameters('hyperparams.json')
+TARGET, LR_TARGET_MODEL, EPOCHS_TARGET_MODEL, L_INF_BOUND, EPOCHS, LR, ALPHA, BETA, GAMMA, KAPPA, C, N_STEPS_D, N_STEPS_G, LOSS_FUN, Lambda_gp = load_hyperparameters('hyperparams.json')
 
 
 print('\nCREATING NECESSARY DIRECTORIES...')
@@ -295,7 +296,8 @@ advGAN = AdvGAN_Attack(
                         c=C, 
                         n_steps_D=N_STEPS_D, 
                         n_steps_G=N_STEPS_G, 
-                        loss_fun=LOSS_FUN
+                        loss_fun=LOSS_FUN,
+                        lambda_gp=Lambda_gp
                     )
 advGAN.train(train_dataloader, EPOCHS)
 
